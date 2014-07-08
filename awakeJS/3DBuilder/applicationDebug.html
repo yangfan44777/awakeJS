@@ -1,0 +1,243 @@
+<html>
+<script src="core/EventDispatcher.js" ></script>
+<script src="core/Draggable.js" ></script>
+<script src="core/Triangle.js" ></script>
+<script src="core/Rectangle.js" ></script>
+<script src="core/Circle.js" ></script>
+<script src="core/Line.js" ></script>
+<script src="core/EventUtil.js" ></script>
+<script src="core/SvgCanvas.js" ></script>
+<script src="core/SvgCanvasContext.js" ></script>
+
+
+
+<!-- application -->
+<script src="application/MResizeable.js" ></script>
+<script src="application/MTriangle.js" ></script>
+<script src="application/MPoint.js" ></script>
+<script src="application/MLine.js" ></script>
+<script src="application/Mesh2D.js" ></script>
+
+
+<!--resize-->
+
+<script src="resize/GraphContainer.js"></script>
+<script src="resize/ResizeContainer.js"></script>
+<script src="resize/ResizeHandle.js"></script>
+<script src="resize/ResizeTriangle.js"></script>
+
+
+<!--awakeJS-->
+<script src="../core/Renderer.js" ></script>
+<script src="../core/Material.js" ></script>
+<script src="../math/Matrix4.js"></script>
+<script src="../math/Matrix3.js"></script>
+<script src="../math/Vector3.js"></script>
+<script src="../core/Face.js" ></script>
+<script src="../core/Camera.js" ></script>
+<script src="../core/Vertex.js" ></script>
+<script src="../core/Timer.js" ></script>
+
+<style>
+
+</style>
+<script>
+var mesh;var faces=[],vertices=[];
+var meshData;
+var timer = new Timer(30);
+window.onload = function () {
+
+
+	var svgDom = document.getElementById("mySvg");
+	canvas = new SvgCanvas(svgDom,'500','500');
+	container = svgDom;
+	
+	var canvas3D = document.getElementById('myCanvas');
+
+	canvas3D.width = document.body.clientWidth - 500;
+	canvas3D.height = 500;
+	/****控制摄像机转动*************************************************/
+	var moveHandle
+	EventUtil.addListener(canvas3D , "mousedown" , function (e) {
+	
+		
+		var old_x = e.offsetX;
+		var old_y = e.offsetY;
+	
+		EventUtil.addListener(canvas3D , "mousemove" , moveHandle = function (e) {
+		
+			var d_ry = ( e.offsetX - old_x ) / 180;
+			var d_rx = ( e.offsetY - old_y ) / 180;
+			
+			camera.ry += d_ry;
+			//camera.rx += d_rx;
+			camera.ry = camera.ry%(Math.PI*2);
+			//camera.rx = camera.rx%(Math.PI*2);
+			
+			camera.y = ((500*Math.sqrt(2))*Math.sin(camera.rx));
+			
+			camera.x = -((500*Math.sqrt(2)*Math.cos(camera.rx))*Math.sin(camera.ry));
+			camera.z = -((500*Math.sqrt(2)*Math.cos(camera.rx))*Math.cos(camera.ry));
+			
+			old_x = e.offsetX;
+			old_y = e.offsetY;
+			
+		
+		});
+		
+		var upHandle;
+		var outHandle;
+		EventUtil.addListener(canvas3D , "mouseup" , upHandle = function (e) {
+		
+			EventUtil.removeListener(canvas3D , "mouseup" , upHandle);
+			EventUtil.removeListener(canvas3D , "mousemove" , moveHandle);
+			
+		
+		});
+		EventUtil.addListener(canvas3D , "mouseout" , outHandle = function (e) {
+		
+			EventUtil.removeListener(canvas3D , "mouseout" , outHandle);
+			EventUtil.removeListener(canvas3D , "mousemove" , moveHandle);
+			
+		
+		});
+	
+	});
+	
+	
+	
+	var renderer =  new Renderer(canvas3D);
+			
+	var camera = new Camera();
+
+	
+	
+	camera.ry = -Math.PI/4;
+	
+	camera.x = -((500*Math.sqrt(2))*Math.sin(camera.ry));
+	camera.z = -((500*Math.sqrt(2))*Math.cos(camera.ry));
+			
+	var ctx = canvas3D.getContext("2d");
+		
+	auto = false;
+	var aa = function (  ) {
+	
+		if(auto){
+		camera.ry += (3.14/90);
+		
+		camera.y = ((500*Math.sqrt(2))*Math.sin(camera.rx));
+			
+		camera.x = -((500*Math.sqrt(2)*Math.cos(camera.rx))*Math.sin(camera.ry));
+		camera.z = -((500*Math.sqrt(2)*Math.cos(camera.rx))*Math.cos(camera.ry));
+		
+		
+		}
+		camera.ry = camera.ry%(Math.PI*2);
+		var span = document.getElementById("ry");
+			span.innerHTML = (camera.ry * 180 / Math.PI).toFixed(2) + " deg";
+		var spanx = document.getElementById("rx");
+			spanx.innerHTML = (camera.rx * 180 / Math.PI).toFixed(2) + " deg";
+	
+		faces=[];
+		vertices=[];
+		meshData = mesh.getMeshData();
+		document.getElementById("vertices").innerHTML = mesh.pointSvg.length;
+		document.getElementById("faces").innerHTML = mesh.triangleSvg.length;
+		
+		
+		
+		createVertex(meshData.verticesrc);
+					
+		createFaces(meshData.facesrc);
+		
+		renderer.render(faces , camera);
+				
+	}
+				
+	timer.addAction(aa);
+		
+	mesh = new Mesh2D(canvas);
+	
+	
+	//GraphContainer.getInstance().initResize();
+	
+
+}
+var tex = new Image();
+function run(){
+	tex = new Image();	
+	tex.src = "images/111111.jpg";
+	
+	tex.onload = function() {   
+		meshData = mesh.getMeshData();
+		
+		createVertex(meshData.verticesrc);
+					
+		createFaces(meshData.facesrc);
+				
+		timer.start();
+	}
+}
+function check(){
+	
+		console.log(mesh.pointSvg);
+		console.log(mesh.triangleSvg);
+		console.log(mesh.lineSvg);
+		console.log(mesh.getMeshData());
+	}
+
+function createVertex ( src ) {
+		
+	var len = src.length;
+			
+	for ( var i = 0 ; i < len ; i++ ) {
+			
+		var v = src[i];
+		vertices.push( new  Vertex(v[0],v[1],v[2]) );
+			
+	}
+		
+}
+		
+function createFaces ( src ) {
+		
+	var len = src.length;
+			
+	for ( var i = 0 ; i < len ; i++ ) {
+	
+		var f = src[i];
+				
+		var face = new Face(vertices[f[0]-1],vertices[f[1]-1],vertices[f[2]-1]);
+		
+		face.setMaterial( tex ,meshData.uvsrc[i] );
+		
+		faces.push( face );
+	
+	}
+
+}
+</script>
+
+
+<body>
+
+<image src="images/111111.jpg" width="500" height="500" style="position:absolute;right:0;top:0;"></image>
+<svg xmlns="http://www.w3.org/2000/svg" id="mySvg"  style="position:absolute;right:0;top:0;border:1px solid black">
+</svg>
+
+<canvas id="myCanvas" style="border:1px solid black;position:absolute;left:0;top:0;background:black">
+</canvas>
+
+<input type="button" style="position:absolute;top:510px;left:0;" value="render" onclick="run();">
+<input type="button" style="position:absolute;top:510px;left:60;" value="disp" onclick="window.auto = window.auto === true?false:true">
+<span style="position:absolute;left:10;top:10;font-size:12px;color:#eb0000">awakeJS beta</span>
+
+<span style="position:absolute;left:10;top:30;font-size:12px;color:#ffffff">camera ry: <span id="ry"></span></span>
+<span style="position:absolute;left:10;top:45;font-size:12px;color:#ffffff">camera rx: <span id="rx"></span></span>
+<span style="position:absolute;left:10;top:60;font-size:12px;color:#ffffff">vertices: <span id="vertices"></span></span>
+<span style="position:absolute;left:10;top:75;font-size:12px;color:#ffffff">faces: <span id="faces"></span></span>
+
+</body>
+
+
+</html>

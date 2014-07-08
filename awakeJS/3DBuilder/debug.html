@@ -1,0 +1,330 @@
+<html>
+
+<script src="core/Draggable.js" ></script>
+<script src="core/Triangle.js" ></script>
+<script src="core/Circle.js" ></script>
+<script src="core/Line.js" ></script>
+<script src="core/EventUtil.js" ></script>
+<script src="core/SvgCanvas.js" ></script>
+<script src="core/SvgCanvasContext.js" ></script>
+
+<!--awakeJS-->
+	<script src="../core/Renderer.js" ></script>
+	
+	<script src="../core/Material.js" ></script>
+	<script src="../math/Matrix4.js"></script>
+	<script src="../math/Matrix3.js"></script>
+	<script src="../math/Vector3.js"></script>
+	
+	<script src="../core/Face.js" ></script>
+	<script src="../core/Camera.js" ></script>
+	<script src="../core/Vertex.js" ></script>
+	<script src="../core/Timer.js" ></script>
+
+<script>
+var verticesrc = [];
+var facesrc = [];
+var uvsrc = [];
+//awakeJS
+var timer = new Timer(30);
+	window.onload = function(){
+	
+		//awakeJS
+		var canvas = document.getElementById('canvas');
+			canvas.width = 800;
+			canvas.height = 800;
+			
+			var renderer =  new Renderer(canvas);
+			
+			var camera = new Camera();
+
+			camera.x = 300;
+			//camera.y = -230;
+			camera.ry = -3.14/4;
+			camera.z = -300;
+			
+			var ctx = canvas.getContext("2d");
+		
+		
+		/*var targetX = 2000;
+			var spring = 0.15;
+			var vx=0;
+			var ff = 0.85;*/
+			var aa = function (  ) {
+		
+				/*var dx= targetX - camera.x;
+				
+				var ax=dx*spring;
+				vx+=ax;
+				vx*=ff;
+				camera.x +=vx;*/
+				
+				renderer.render(faces , camera);
+				
+			}
+			
+			
+			timer.addAction(aa);
+			
+		var svgDom = document.getElementById("mySvg");
+		var canvas = new SvgCanvas(svgDom,288,288);
+		var container = svgDom;
+		
+		
+		var d0 = new Dline(0 , 0 ,50,0, container);
+		
+	var currentFacePts=[];
+		
+		function Dline ( x1,y1,x2,y2 ,container ) {//应该在appendChild的时候再设置container
+		
+			this.line = new Line( x1,y1,x2,y2,container);
+			
+			var line = this.line;
+			canvas.appendChild(line);
+			EventUtil.addListener( line.element , "mousedown" , function (e) {
+		
+			var mouseX = e.offsetX;
+			var mouseY = e.offsetY;
+			
+			
+			
+			var x1 = line.currentPosition.x1;
+			var y1 = line.currentPosition.y1;
+			
+			var x2 = line.currentPosition.x2;
+			var y2 = line.currentPosition.y2;
+			
+			currentFacePts.push([x1,y1,0,]);
+			currentFacePts.push([x2,y2,0,]);
+			
+			verticesrc.push([(x1 -144) ,(y1-144),0]);
+			verticesrc.push([(x2 -144) ,(y2-144),0]);
+			
+			var tri = new Triangle(x1, y1 ,x2 ,y2,mouseX,mouseY, container );
+		
+			canvas.appendChild(tri);
+			
+			
+			moveHandler = function(e) {
+				
+				tri.setCurrentPosition(x1,y1,x2,y2,e.offsetX,e.offsetY);
+				
+				tri.element.style.cursor = "default"; 
+			};
+			
+			EventUtil.addListener( container , "mousemove" , moveHandler );
+			
+			
+			upHandler = function(e) { 
+	
+				//_self.dragElement.style.cursor = "default"; 
+				var d1 = new Dline(x1,y1,e.offsetX,e.offsetY,container);
+				var d2 = new Dline(x2,y2,e.offsetX,e.offsetY,container);
+				
+				EventUtil.removeListener( container , "mousemove" , moveHandler );
+								
+				EventUtil.removeListener( window, "mouseup" , upHandler );
+				
+				currentFacePts.push([e.offsetX,e.offsetY,0,]);
+				
+				verticesrc.push([e.offsetX-144,e.offsetY-144,0,]);
+				
+				var v0_x = currentFacePts[0][0];
+				var v0_y = currentFacePts[0][1];
+				
+				var v1_x = currentFacePts[1][0];
+				var v1_y = currentFacePts[1][1];
+				
+				var v2_x = currentFacePts[2][0];
+				var v2_y = currentFacePts[2][1];
+				
+				
+				facesrc.push([verticesrc.length-2,verticesrc.length-1,verticesrc.length]);
+				
+				uvsrc.push( [[v0_x/288,v0_y/288],[v1_x/288,v1_y/288],[v2_x/288,v2_y/288]]  );
+				
+				currentFacePts=[];							
+			};
+			
+			EventUtil.addListener( window , "mouseup" , upHandler );
+		
+		});
+		
+		}
+		
+		
+		/*function dragLine () {var line = new Line( 10 , 10 ,50,70, container);
+		canvas.appendChild(line);
+		EventUtil.addListener( line.element , "mousedown" , function (e) {
+		
+			var mouseX = e.offsetX;
+			var mouseY = e.offsetY;
+			
+			
+			
+			var x1 = line.currentPosition.x1;
+			var y1 = line.currentPosition.y1;
+			
+			var x2 = line.currentPosition.x2;
+			var y2 = line.currentPosition.y2;
+			
+			var tri = new Triangle(x1, y1 ,x2 ,y2,mouseX,mouseY, container );
+			canvas.appendChild(tri);
+			
+			
+			moveHandler = function(e) {
+				
+				tri.setCurrentPosition(x1,y1,x2,y2,e.offsetX,e.offsetY);
+				tri.element.style.cursor = "default"; 
+			};
+			
+			EventUtil.addListener( container , "mousemove" , moveHandler );
+			
+			
+			upHandler = function(e) { 
+	
+				//_self.dragElement.style.cursor = "default"; 
+				
+				EventUtil.removeListener( container , "mousemove" , moveHandler );
+								
+				EventUtil.removeListener( window, "mouseup" , upHandler );
+												
+			};
+			
+			EventUtil.addListener( window , "mouseup" , upHandler );
+		
+		});
+		
+		}*/
+		
+		
+		
+		
+	/*	var svgDom = document.getElementById("mySvg");
+
+		var clickedOnSvg  = (function () {
+		
+	
+		var currentFacePts = [];
+		
+		return function (e) {
+		
+			var canvas = new SvgCanvas(svgDom,288,288);
+			
+			
+			var container = svgDom;
+		
+			var point = new Circle( e.offsetX,e.offsetY , 2 , container );
+			
+			canvas.appendChild( point );
+		
+			currentFacePts.push( point );
+			
+			verticesrc.push([(point.currentPosition.x -144) ,( point.currentPosition.y-144),0]);
+			
+			if(currentFacePts.length == 3){
+			
+			
+				var v0 = currentFacePts[0].currentPosition;
+				var v1 = currentFacePts[1].currentPosition;
+				var v2 = currentFacePts[2].currentPosition;
+				
+				facesrc.push([verticesrc.length-2,verticesrc.length-1,verticesrc.length]);
+				
+				uvsrc.push( [[v0.x/288,v0.y/288],[v1.x/288,v1.y/288],[v2.x/288,v2.y/288]]  );
+				
+				var tri = new Triangle(v0.x, v0.y ,v1.x ,v1.y,v2.x,v2.y, container );
+				canvas.appendChild( tri );
+				currentFacePts=[];
+			
+			}
+		}
+		
+		
+	})();*/
+		
+		//svgDom.addEventListener("click",clickedOnSvg,false);
+	
+	
+	}
+	
+	function getVerticesrc ( ) {
+	
+		var str = "";
+		
+		console.log(uvsrc);
+	
+	}
+	
+	var tex = new Image();
+		function run(){
+			
+			
+			tex.src = "11111.jpg";
+			//	tex.src = "sharaku.jpg";
+		
+			
+			tex.onload = function() {   
+					
+					createVertex(verticesrc);
+					
+					createFaces(facesrc);
+					
+					timer.start();
+				}
+		
+		}
+		
+		var vertices = [];
+		var faces = [];///!!!!!!!!!!!!!!!!!!!! 每一个mesh对应一个大图片，而不是一个face数组对应一个大图片，这里是测试		
+				
+		function createVertex ( src ) {
+		
+			var len = src.length;
+			
+			for ( var i = 0 ; i < len ; i++ ) {
+			
+				var v = src[i];
+				vertices.push( new  Vertex(v[0],v[1],v[2]) );
+			
+			}
+		
+		}
+		
+		function createFaces ( src ) {
+		
+			var len = src.length;
+			
+			for ( var i = 0 ; i < len ; i++ ) {
+			
+				var f = src[i];
+				
+							
+				var face = new Face(vertices[f[0]-1],vertices[f[1]-1],vertices[f[2]-1]);
+				
+		
+				face.setMaterial( tex ,uvsrc[i] );
+				
+				faces.push( face );
+			
+			}
+		
+		}
+
+		
+	
+</script>
+<image src="11111.jpg" width="288" height="288" style="position:absolute;left:800;top:0;"></image>
+	<svg xmlns="http://www.w3.org/2000/svg" id="mySvg"  width="288" height="288" style="position:absolute;left:800;top:0;border:1px solid black">
+			
+		
+	</svg>
+	
+	<canvas id="canvas" style="border:1px solid black">
+	
+	</canvas>
+		
+		<input type="button" onclick="getVerticesrc()" value="getVerticesrc"/>
+		<input type="button" onclick="run()" value="run"/>
+</html>
+

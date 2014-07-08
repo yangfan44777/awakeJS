@@ -1,0 +1,513 @@
+
+<html>
+<style>
+html , body {
+	
+	margin:0px;
+	padding:0px;
+
+}
+</style>
+<script src="core/Draggable.js" ></script>
+<script src="core/Triangle.js" ></script>
+<script src="core/Circle.js" ></script>
+<script src="core/Line.js" ></script>
+<script src="core/EventUtil.js" ></script>
+<script src="core/SvgCanvas.js" ></script>
+<script src="core/SvgCanvasContext.js" ></script>
+
+<!--awakeJS-->
+<script src="../core/Renderer.js" ></script>
+<script src="../core/Material.js" ></script>
+<script src="../math/Matrix4.js"></script>
+<script src="../math/Matrix3.js"></script>
+<script src="../math/Vector3.js"></script>
+<script src="../core/Face.js" ></script>
+<script src="../core/Camera.js" ></script>
+<script src="../core/Vertex.js" ></script>
+<script src="../core/Timer.js" ></script>
+
+
+<script>
+var verticeSvg = [];
+var faceSvg = [];
+var uvSvg = [];
+
+
+var verticesrc = [];
+var facesrc = [];
+var uvsrc = [];
+
+var container;
+var canvas;
+
+var timer = new Timer(30);
+/* 实时更新渲染器：先把svgCanvas上的图形转换成src数组，再通过src数组生成awakejs所需的数据格式 */
+
+function upCallback ( ) {
+
+	//无论是点还是线，松开鼠标后更新所有src数据
+	var len = verticeSvg.length;
+	for( var i=0 ; i<len ; i++ ){
+	
+		verticesrc[i] = [verticeSvg[i].x - 250 , verticeSvg[i].y - 250 , verticeSvg[i].z];
+		
+	}
+	
+	len = uvSvg.length;
+	for( var i=0 ; i<len ; i++ ){
+	
+		uvsrc[i] = [[uvSvg[i].v0.x/500 , uvSvg[i].v0.y/500],
+					[uvSvg[i].v1.x/500 , uvSvg[i].v1.y/500],
+					[uvSvg[i].v2.x/500 , uvSvg[i].v2.y/500]
+				    ]
+		
+	}
+	
+	facesrc = faceSvg;
+	//uvsrc = uvSvg;
+	
+	
+}
+
+window.onload = function () {
+
+	var svgDom = document.getElementById("mySvg");
+	canvas = new SvgCanvas(svgDom,'500','500');
+	container = svgDom;
+	var canvas3D = document.getElementById('myCanvas');
+
+	canvas3D.width = 500;
+	canvas3D.height = 500;
+	var renderer =  new Renderer(canvas3D);
+			
+	var camera = new Camera();
+
+	camera.x = 500;
+	camera.ry = -3.14/4;
+	camera.z = -500;
+			
+	var ctx = canvas3D.getContext("2d");
+		
+	var aa = function (  ) {
+		
+		renderer.render(faces , camera);
+				
+	}
+				
+	timer.addAction(aa);
+	
+	
+	
+	var v0 = new Point(100,100);
+	var v1 = new Point(200,100);
+	var v2 = new Point(100,200);
+	var triInit = new Tri( v0 , v1 , v2 );
+	
+	//verticeSvg.push( v0 , v1 , v2 );
+	//faceSvg.push( [verticeSvg.indexOf(v0) + 1 , verticeSvg.indexOf(v1) + 1 ,verticeSvg.indexOf(v2) + 1 ]);
+	//uvSvg.push( [[v0.x/288,v0.y/288],[v1.x/288,v1.y/288],[v2.x/288,v2.y/288]]  );
+	
+}
+
+
+function Tri ( v0 , v1 , v2 ) {
+
+	this.triElement = new Triangle( v0.x , v0.y , v1.x , v1.y , v2.x , v2.y  );//instance of Triangle
+	canvas.insertChild(this.triElement);
+	
+	faceSvg.push( [verticeSvg.indexOf(v0) + 1 , verticeSvg.indexOf(v1) + 1 ,verticeSvg.indexOf(v2) + 1] );
+	//uvSvg.push( [[v0.x/288,v0.y/288],[v1.x/288,v1.y/288],[v2.x/288,v2.y/288]]  );
+	
+	uvSvg.push( this );
+	
+	this.v0 = v0;////instance of Point
+	this.v1 = v1;
+	this.v2 = v2;
+	
+	var line01 = new MyLine(v0,v1);
+	var line02 = new MyLine(v0,v2);
+	var line12 = new MyLine(v1,v2);
+		
+	
+	this.v0.lines.push( line01,line02 );
+	//this.v0.lines.push( line02 );
+	
+	this.v1.lines.push( line01 , line12 );
+	//this.v1.lines.push( line12 );
+	
+	this.v2.lines.push( line02 , line12 );
+	//this.v2.lines.push( line12 );
+	
+	this.v0.triangles.push( this );
+	this.v1.triangles.push( this );
+	this.v2.triangles.push( this );
+
+}
+Tri.prototype = {
+
+	update : function () {
+	
+		var triEle = this.triElement;
+		
+		var v0_x = this.v0.x;
+		var v0_y = this.v0.y;
+		var v1_x = this.v1.x;
+		var v1_y = this.v1.y;
+		var v2_x = this.v2.x;
+		var v2_y = this.v2.y;
+		
+		triEle.setCurrentPosition(v0_x , v0_y , v1_x , v1_y , v2_x , v2_y );
+	
+	}
+
+}
+
+function Point ( x , y ) {
+
+	this.triangles = [];
+	this.lines = [];
+	this.x = x;
+	this.y = y;
+	this.z = 0;
+	this.pointElement = new Circle( x , y ,3  );
+	canvas.appendChild(this.pointElement);
+	
+	
+	var upHandler;
+	var moveHandler;
+	var wheelHandler;
+	var self = this;
+	
+	var mousedownHandler = function ( e ) {
+		//self.merge(verticeSvg[0]);
+		EventUtil.addListener( window , "mousemove" ,moveHandler = function (e) {
+		
+			self.update();
+			run();
+		} );
+		EventUtil.addListener( window , "mousewheel" , wheelHandler=function (e) {
+		
+	
+			var s = ( e.detail ) ? -e.detail : e.wheelDelta;
+			
+			if(s>0)
+				self.z+=10;
+			
+			else 
+				self.z-=10;
+			
+			run();
+		
+		});
+		
+		
+		EventUtil.addListener( window , "mouseup" , upHandler = function () {
+			
+			//遍历所有点，合并
+			for(var i = 0;i<verticeSvg.length;i++){
+				if(verticeSvg[i]===self)continue;
+				var dx = verticeSvg[i].x-self.x;
+				var dy = verticeSvg[i].y-self.y;
+				if( Math.sqrt(dx*dx + dy*dy)<=4 ){
+				
+					self.merge(verticeSvg[i]);
+					break;
+				}
+			
+			}
+			
+			EventUtil.removeListener( window , "mousemove" , moveHandler );
+			
+			EventUtil.removeListener( window , "mouseup" , upHandler );
+			
+			EventUtil.removeListener( window , "mousewheel" , wheelHandler );
+		});
+		
+	}
+	
+	EventUtil.addListener( this.pointElement.element , "mousedown" , mousedownHandler );
+
+	verticeSvg.push(this);
+	
+}
+
+Point.prototype = {
+
+	update : function () {
+	
+		this.x = this.pointElement.currentPosition.x;
+		this.y = this.pointElement.currentPosition.y;
+		
+		
+		//循环遍历triangles数组，更新所有相关tri
+		
+		var tris = this.triangles;
+		var len = tris.length;
+			
+		for(var i=0;i<len;i++){
+			
+			tris[i].update();
+			
+		}
+		
+		//遍历lines数组，更新所有相关line
+		
+		var lines = this.lines;
+		var len = lines.length;
+			
+		for(var i=0;i<len;i++){
+			
+			lines[i].update();
+			
+		}
+	},
+	
+	//存在bug.算法需要重新设计
+	merge : function ( v ) {
+		if(v===this)return;
+		//移除v的element
+		var element = v.pointElement;
+		canvas.removeChild(element);
+		//v.pointElement.element = undefined;
+		
+		var vTri = v.triangles;
+		var vTriLen = vTri.length;
+		var selfTri = this.triangles;
+		
+		for(var i=0;i<vTriLen;i++){
+			
+			var indexTri;
+			
+			if( ( indexTri = selfTri.indexOf(vTri[i])) ===-1){
+			
+				selfTri.push(vTri[i]);
+			}
+			else {
+				//如果两个合并点属于同一个面，需要删除该面 和 所有 边
+			
+			/*	selfTri.splice( indexTri, 1 );
+				
+				canvas.removeChild(vTri[i].triElement);
+				
+				vTri.splice( i, 1 );
+				
+				continue;
+			*/
+			}
+			
+			if( vTri[i].v0===v ){
+			
+				vTri[i].v0 = this;
+			
+			}
+			if( vTri[i].v1===v ){
+			
+				vTri[i].v1 = this;
+			
+			}
+			if( vTri[i].v2===v ){
+			
+				vTri[i].v2 = this;
+			
+			}
+			
+		}
+		
+		
+		var vLine = v.lines;
+		var vLineLen = vLine.length;
+		var selfLine = this.lines;
+		for(var i=0;i<vLineLen;i++){
+		
+			
+		
+			var indexLine;
+			if( (indexLine = selfLine.indexOf(vLine[i]))===-1){
+			
+				selfLine.push(vLine[i]);
+			}
+			else{
+				//如果两个合并点属于同一条线，需要删除该线
+				/*selfLine.splice( indexLine, 1 );
+				
+				
+				canvas.removeChild(vLine[i].lineElement);
+				
+				
+				vLine.splice( i, 1 );
+				
+				continue;
+				*/
+				
+			}
+			
+			
+			if( vLine[i].v0===v ){
+			
+				vLine[i].v0 = this;
+			
+			}
+			if(vLine[i].v1===v){
+			
+				vLine[i].v1 = this;
+			
+			}
+				
+			
+		}
+		
+		//如果两个合并点属于同一条线，需要删除该线
+		
+		
+		
+		//需要更新verticesSvg、faceSvg、uvSvg
+		
+	
+		for(var i = 0;i<verticeSvg.length;i++)
+		{
+			if(verticeSvg[i]===v)
+			verticeSvg[i] = this;
+		}
+		
+		this.update();
+		
+		
+		
+		
+	
+	}
+
+}
+
+function MyLine( v0 , v1 ) {
+
+	this.lineElement = new Line( v0.x,v0.y,v1.x,v1.y );
+	canvas.insertChildBefore( this.lineElement ,"circle");
+	
+	
+	this.v0 = v0;
+	this.v1 = v1;
+	var self = this;
+	
+	EventUtil.addListener( this.lineElement.element ,"mousedown",function(e){
+	   
+		var moveHandler;
+		var upHandler;
+		//绘制临时的连线
+		var v0 = self.v0;
+		var v1 = self.v1;
+		var line1 = new Line(v0.x,v0.y,e.offsetX,e.offsetY);
+		
+		var line2 = new Line(v1.x,v1.y,e.offsetX,e.offsetY);
+		canvas.insertChildBefore(line1,"circle");
+		canvas.insertChildBefore(line2,"circle");
+		EventUtil.addListener( window,"mousemove",moveHandler=function(e) {
+			run();
+				line1.setCurrentPosition( v0.x,v0.y,e.offsetX,e.offsetY );
+				line2.setCurrentPosition( v1.x,v1.y,e.offsetX,e.offsetY );
+				
+			});
+			
+			EventUtil.addListener( window,"mouseup" ,upHandler = function(e){
+			
+				
+				var v = new Point(e.offsetX,e.offsetY);
+				new Tri( self.v0 , self.v1, v );
+				
+				canvas.removeChild( line1 );
+				canvas.removeChild( line2 );
+				
+				EventUtil.removeListener(window,"mosuemove",moveHandler);
+				EventUtil.removeListener(window,"mouseup",upHandler);
+				
+				
+			
+			});
+	});
+
+}
+
+MyLine.prototype = {
+
+	update : function () {
+		var v0 = this.v0;
+		var v1 = this.v1;
+		this.lineElement.setCurrentPosition(v0.x,v0.y,v1.x,v1.y );
+	
+	}
+
+}
+
+
+
+
+
+////////////////////////
+var tex = new Image();
+function run(){
+	tex = new Image();	
+	tex.src = "hulk.jpg";
+	
+	tex.onload = function() {   
+		vertices=[];
+		faces=[];
+		upCallback();
+		createVertex(verticesrc);
+					
+		createFaces(facesrc);
+				
+		timer.start();
+	}
+}
+		
+var vertices = [];
+var faces = [];/////!!!!!!!!!!!!!!!!!!!! 每一个mesh对应一个大图片，而不是一个face数组对应一个大图片，这里是测试		
+				
+function createVertex ( src ) {
+		
+	var len = src.length;
+			
+	for ( var i = 0 ; i < len ; i++ ) {
+			
+		var v = src[i];
+		vertices.push( new  Vertex(v[0],v[1],v[2]) );
+			
+	}
+		
+}
+		
+function createFaces ( src ) {
+		
+	var len = src.length;
+			
+	for ( var i = 0 ; i < len ; i++ ) {
+	
+		var f = src[i];
+				
+		var face = new Face(vertices[f[0]-1],vertices[f[1]-1],vertices[f[2]-1]);
+		
+		face.setMaterial( tex ,uvsrc[i] );
+		
+		faces.push( face );
+	
+	}
+
+}
+
+</script>
+
+<body>
+
+<image src="hulk.jpg" width="500" height="500" style="position:absolute;left:550;top:0;"></image>
+<svg xmlns="http://www.w3.org/2000/svg" id="mySvg"  width="500" height="500" style="position:absolute;left:550;top:0;border:1px solid black">
+</svg>
+
+<canvas id="myCanvas" style="border:1px solid black;">
+</canvas>
+<input type="button" style="position:absolute;top:510px;left:0;" value="getSrc" onclick="upCallback();console.log(verticesrc);console.log(facesrc);console.log(uvsrc);">
+<input type="button" style="position:absolute;top:510px;left:70;" value="run" onclick="run();">
+
+</body>
+
+</html>

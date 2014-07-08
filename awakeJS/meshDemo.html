@@ -1,0 +1,390 @@
+
+  
+  
+ 
+<html>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<style>
+
+  .ui-slider .ui-slider-handle{
+	width:10px;
+	height:10px;
+  }
+  
+  	body,html{
+		margin:0px;
+		padding:0px;
+		overflow:hidden;
+	}
+	h1{
+		font-size:13px;
+		font-family:"Microsoft YaHei";
+		font-weight:normal;
+		color:gray;
+	}
+	canvas{
+		border:solid 1px gray;
+		background-color:white;
+	}
+	#eq span {
+		height:120px; float:left; margin:15px;
+		width:5px;
+  }
+  .ui-slider .ui-slider-handle{
+	width:10px;
+	height:10px;
+  }
+</style>
+
+<script>
+	
+</script>
+
+<body>
+
+<canvas id="canvas" style="left:270px;position:absolute;top:40px;">
+
+</canvas>
+
+	
+	<script>
+	var canvas,ctx;
+	
+	var addListener = function( e, str, func ) {
+		if( e.addEventListener ) {
+			e.addEventListener( str, func, false );
+		}else if( e.attachEvent ) {
+			e.attachEvent( "on" + str, func );
+		}else {
+			
+		}
+	};
+	addListener( window, "load", init );
+	
+	var mesh1,mesh2,mesh3,mesh4;
+	var cam
+	function init(){
+	
+		canvas = document.getElementById("canvas");
+		canvas.width =  window.innerWidth-300;
+		canvas.height = window.innerHeight-70;
+		ctx = canvas.getContext("2d");
+		var verticesrc = [[786,960,0],[79,960,0],[-530,960,0],[353,655,-229],[-15,705,-322],[-182,630,-285],[446,370,-247],[210,353,-352],[131,392,-370],[131,315,-370],[-115,379,-370],[-200,346,-352],[-36,340,-381],[-123,304,-370],[37,342,-381],[-308,290,-256],[-173,-10,-217],[-110,140,-387],[-90,66,-381],[-30,111,-421],[95,71,-375],[-38,160,-479],[80,145,-387],[786,-82,0],[309,-60,-261],[-5,-190,-289],[-41,-74,-387],[57,-74,-387],[-530,-174,0],[786,-1015,0],[-530,-1015,0],[-43,67,-419],[15,63,-419],[-43,54,-419],[15,54,-419]];
+		var polysrc = [[4,2,1],[10,9,8],[10,15,9],[23,15,10],[23,22,15],[21,20,23],[33,20,21],[28,35,21],[27,35,28],[27,34,35],[27,19,34],[33,32,20],[32,19,20],[19,18,20],[27,17,19],[19,16,18],[18,16,14],[18,14,13],[14,12,11],[16,12,14],[31,29,17],[17,16,19],[30,25,24],[24,7,1],[29,3,16],[12,6,11],[14,11,13],[26,27,28],[26,17,27],[18,13,22],[22,13,15],[20,18,22],[20,22,23],[8,4,7],[8,9,4],[9,5,4],[11,6,5],[29,16,17],[26,28,25],[11,5,9],[25,23,7],[23,10,8],[23,8,7],[15,11,9],[13,11,15],[6,3,2],[6,2,5],[4,5,2],[28,21,25],[25,21,23],[31,26,30],[31,17,26],[30,26,25],[7,4,1],[24,25,7],[16,6,12],[16,3,6]];
+		                   //0               //1           //2            //3             //4          //5             //6            //7              //8            //9        //10         //11            //12          //13          //14         //15         //16          //17            //18          //19         //20      //21
+		//var verticesrc = [[-50,-250,-50],[50,-250,-50],[200,250,-50],[100,250,-50],[50,100,-50],[-50,100,-50],[-100,250,-50],[-200,250,-50],[0,-150,-50],[50,0,-50],[-50,0,-50],[-50,-250,50],[50,-250,50],[200,250,50],[100,250,50],[50,100,50],[-50,100,50],[-100,250,50],[-200,250,50],[0,-150,50],[50,0,50],[-50,0,50]];
+		//var polysrc = [[1,2,7],[2,10,9],[2,3,10],[3,5,10],[3,4,5],[5,6,10],[10,6,11],[6,7,8],[6,8,11],[1,11,8],[1,9,11],[12,20,13],[13,20,21],[13,21,14],[14,21,16],[14,16,15],[16,21,17],[21,22,17],[17,19,18],[17,22,19],[12,19,22],[12,22,20],[1,12,2],[12,13,2],[2,13,3],[13,14,3],[4,3,15],[3,14,15],[5,4,16],[4,15,16],[6,5,17],[5,16,17],[7,6,18],[6,17,18],[8,7,19],[7,18,19],[1,8,12],[8,19,12],[9,10,20],[10,21,20],[10,11,21],[11,22,21],[11,9,22],[9,20,22]];
+		
+		
+		//var verticesrc =[[0,300,0],[260,-150,0],[-260,-150,0],[0,0,497]];
+		//var polysrc =[[1,2,4],[2,3,4],[3,2,1],[1,4,3]];
+		
+		
+		var verticesrc2 = [[-1500,0,0],[1500,0,0],[-1000,0,0]];
+		var polysrc2 = [[1,2,3]]; 
+		var verticesrc3 = [[0,1500,0],[0,-1500,0],[0,-1500,0]];
+		var polysrc3 = [[1,2,3]];
+		var verticesrc4 = [[0,0,1500],[0,0,-1500],[0,0,-1500]];
+		var polysrc4 = [[1,2,3]];
+		
+		cam = new Camera(-3000,-479,1737);
+	
+		mesh1 = new Mesh( verticesrc , polysrc );
+		mesh2 = new Mesh( verticesrc2 , polysrc2 );
+		mesh3 = new Mesh( verticesrc3 , polysrc3 );
+		mesh4 = new Mesh( verticesrc4 , polysrc4 );
+		
+		var FPS = 30;
+		var interval = 1000 / FPS;
+		
+		var timer = setInterval( update, interval );
+		addListener( window, "resize", resize );
+
+		resize();
+	}
+	
+	function resize() {
+		canvas.width =  window.innerWidth-300;
+		canvas.height =window.innerHeight-70;
+		
+	}
+	
+	function update() {
+
+		ctx.clearRect( 0, 0, canvas.width, canvas.height );
+		//开始各自的动画
+		/*画坐标轴*/
+		
+		
+		
+		
+		cam.update();
+		mesh1.update("#cccccc");
+		mesh2.update("red");
+		mesh3.update("blue");
+		mesh4.update("green");
+
+	
+	}
+	
+	function Mesh(verticesrc,polysrc){
+		/* Mesh实例中不应该存储下面这两行原始数据，应该存储加工后的顶点和多边形数据 */
+		/* var verticesrc = [[360,960,0],[-360,960,0],[360,-100,0],[-360,-100,0]];
+		   var polysrc = [[2,1,3],[2,3,4]];                                         */
+		this.vertices = [];//用来存储加工后的顶点信息
+		this.faces = [];   //用来存储加工后的多边形信息
+		
+		this.makeBody(verticesrc,polysrc);
+		
+	}
+	var compZ = function( a, b ) {	return b.sz - a.sz; };
+	Mesh.prototype.update = function(lineColor){
+
+		var vtxs = this.vertices;
+		var len =vtxs.length;
+		for ( var i = 0; i < len; ++i ) {
+		
+			vtxs[i].update();
+			
+		}
+		
+		/*这里渲染面*/
+		var faces = this.faces;
+		var arr = [];
+		var len2 = 0;
+		for( var i = 0; i < this.faces.length; i++ ){
+			 v = faces[i];
+			if ( v.chkin() ) {//背面剔除
+			   
+				arr[ len2++ ] = v;
+			}
+		}
+		arr.sort( compZ );
+		
+		for( var i = 0; i < arr.length; i++ )
+		{
+	
+			var x0 = arr[i].v0.sx,
+			     y0 = -arr[i].v0.sy,
+				 x1 = arr[i].v1.sx,
+				 y1 = -arr[i].v1.sy,
+				 x2 = arr[i].v2.sx,
+				 y2 = -arr[i].v2.sy;
+			ctx.beginPath();
+	
+			ctx.moveTo( x0, y0 );
+			ctx.lineTo( x1, y1 );
+			ctx.lineTo( x2, y2 );
+			ctx.closePath();
+			
+			ctx.fillStyle = arr[i].color;
+			
+			ctx.fill();
+		//	alert(i);
+		//	ctx.fillText(i+"sz:"+arr[i].sz,10,(i+1)*20);
+			
+			drawLine(x0,y0,x1,y1,lineColor);
+			drawLine(x1,y1,x2,y2,lineColor);
+			drawLine(x0,y0,x2,y2,lineColor);
+		}
+	}
+	
+	Mesh.prototype.makeBody = function( verticesrc, polysrc ){
+	
+		makeVertices(this.vertices,verticesrc);
+		
+		makeFace(this.faces,this.vertices,polysrc);
+		
+	}
+	
+	function makeVertices( res, src ){
+		var len = src.length;
+		for( var i = 0; i < len; i++ ){
+			res[i] = new Vertex(src[i][0],src[i][1],src[i][2]);
+			
+		}
+	}
+	
+	function makeFace( res, vtxs, polysrc ){
+		var len = polysrc.length;
+		for( var i = 0; i < len; i++ ){
+		var bg = "#eeeeee";
+			/*switch(i){
+				case 0:bg="red";break;
+				case 1:bg="green";break;
+				case 2:bg="blue";break;
+				case 3:bg="gray";break;
+			}*/
+			res[i] = new Face( vtxs[ polysrc[i][0] - 1 ], vtxs[ polysrc[i][1] - 1 ], vtxs[ polysrc[i][2] - 1 ],bg);
+		}
+		
+	}
+	function Vertex(x,y,z){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		
+		this.ssz = 0;
+	}
+	//计算3D空间中的点在屏幕的位置
+	Vertex.prototype.update = function() {
+		//这里变换点
+		var ssx = cam.m11 * (this.x +cam.m14) + cam.m12 * (this.y+cam.m24) + cam.m13 * (this.z+cam.m34);//this.x
+		var ssy = cam.m21 * (this.x +cam.m14) + cam.m22 * (this.y+cam.m24) + cam.m23 * (this.z +cam.m34);//this.y
+		var ssz = cam.m31 * (this.x +cam.m14) + cam.m32 * (this.y+cam.m24) + cam.m33 * (this.z +cam.m34);//this.z + 2500
+		
+		
+		
+		
+		//this.sx = this.x * 500 / ( 2500 + this.z ) + canvas.width / 2;
+		//this.sy = this.y * 500 / ( 2500 + this.z ) - canvas.height / 2;
+		
+		this.sx = ssx * cam.distance /  ssz +canvas.width / 2;
+		this.sy = ssy * cam.distance /  ssz -canvas.height/2;
+		
+		this.ssz = ssz;
+	};
+	
+	function Face(v0,v1,v2,bg){
+		this.v0 = v0;
+		this.v1 = v1;
+		this.v2 = v2;
+		this.sz = v0.z + v1.z + v2.z;
+		this.color = bg;
+	}
+	
+	Face.prototype.chkin = function() {
+		var v0 = this.v0, v1 = this.v1,  v2 = this.v2;
+		//if ( ( v1.sx - v0.sx ) * ( v2.sy - v0.sy ) - (  v1.sy - v0.sy ) * (  v2.sx - v0.sx ) < 0 ) {
+			this.sz = v0.ssz + v1.ssz + v2.ssz;
+			return true;
+		//}else {
+		//	return false;
+		//}
+	};
+	function drawLine(x1,y1,x2,y2,lineColor){
+		ctx.beginPath();
+		ctx.strokeStyle = lineColor;
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
+		ctx.stroke();
+	}
+	/**规定用变换矩阵乘以一个列向量*/
+	//所谓的摄像机：首先，摄像机的坐标系的位置是在世界坐标系中定义的，摄像机的投影面永远垂直它自己z轴。我们最关心的是在摄像机这个空间里，世界中的物体看起来是什么样子的，也就是说在摄像机空间里，世界中物体的坐标是什么。
+	//不是将摄像机坐标系从世界坐标旋转过来，而是世界坐标从摄像机坐标系中旋转过去。刚好相反
+	function Camera(x,y,z){
+		this.x = x; this.y = y; this.z = z;
+		this.rx = -0.225;this.ry = 0.785;this.rz =  -0.125;
+		this.distance = 500;
+	//   this.m41 = 0; this.m42 = 0; this.m43 = 0; this.m44 = 1; //这行没有必要存储在内存中
+	}
+	
+	//这个camera的矩阵应该是个什么样的变换呢？ 首先明确一点，通过控制摄像机的xyz坐标、自身旋转，实现一个自由摄像机。现在可以将camera看成是一个坐标系，那么就考虑旋转平移坐标系，但物体不随之旋转平移，然后就可以考虑在这个旋转平移后的坐标系中，原物体的坐标是什么。可是怎么去描述这个坐标系呢？可以用3x3的矩阵描述基向量。但是我关心的并不是坐标系是怎么变换的，变换成了什么，而是在变换过程中，物体的坐标在怎么变化。由于坐标系的一系列变换可以看成是物体做了这一系列变换的逆变换，那么只要知道了这个逆变换，就可以求得物体的摄像机坐标系下的坐标了。嗯，摄像机的思路大概就是这样
+	Camera.prototype.update = function(){
+	
+		
+	
+		//this.m11 = 1;this.m12 = 0;this.m13 = 0;this.m14 = this.x;
+		//this.m21 = 0;this.m22 = Math.cos(this.rx);this.m23 = Math.sin(this.rx);this.m24 = this.y;
+		//this.m31 = 0;this.m32 = -Math.sin(this.rx);this.m33 = Math.cos(this.rx);this.m34 = this.z;
+		
+		/*这里并没有求逆，但是求逆应该不难，因为是旋转矩阵，即正交矩阵，转置就是逆矩阵*/
+		this.m11 = Math.cos(this.ry)*Math.cos(this.rz)+Math.sin(this.ry)*Math.sin(this.rx)*Math.sin(this.rz);
+		this.m12 = -Math.cos(this.ry)*Math.sin(this.rz)+Math.sin(this.ry)*Math.sin(this.rx)*Math.cos(this.rz);
+		this.m13 = Math.sin(this.ry)*Math.cos(this.rx);
+		this.m14 = this.x;
+		this.m21 = Math.sin(this.rz)*Math.cos(this.rx);
+		this.m22 = Math.cos(this.rz)*Math.cos(this.rx);
+		this.m23 = -Math.sin(this.rx);
+		this.m24 = this.y;
+		this.m31 = -Math.sin(this.ry)*Math.cos(this.rz)+Math.cos(this.ry)*Math.sin(this.rx)*Math.sin(this.rz);
+		this.m32 = Math.sin(this.rz)*Math.sin(this.ry)+Math.cos(this.ry)*Math.sin(this.rx)*Math.cos(this.rz);
+		this.m33 = Math.cos(this.ry)*Math.cos(this.rx);
+		this.m34 = this.z;
+	}
+$(function() {
+    
+  $( "#x" ).slider({
+      value: -3000,
+      orientation: "horizontal",
+     max:3000,
+	 min:-3000,
+	
+      animate: false
+    });
+	$( "#x" ).on( "slide", function( event, ui ) {cam.x = $( this ).slider( "value" );$("#vX").text(cam.x+"px");} );
+	$( "#x" ).on( "slidechange", function( event, ui ) {cam.x = $( this ).slider( "value" );$("#vX").text(cam.x+"px");} );
+  
+  $( "#y" ).slider({
+      value: -479,
+      orientation: "horizontal",
+     max:3000,
+	 min:-3000,
+	
+      animate: false
+    });
+	$( "#y" ).on( "slide", function( event, ui ) {cam.y = $( this ).slider( "value" );$("#vY").text(cam.y+"px");} );
+$( "#y" ).on( "slidechange", function( event, ui ) {cam.y = $( this ).slider( "value" );$("#vY").text(cam.y+"px");} );
+
+ $( "#z" ).slider({
+      value: 1737,
+      orientation: "horizontal",
+     max:6000,
+	 min:600,
+	
+      animate: false
+    });
+	$( "#z" ).on( "slide", function( event, ui ) {cam.z = $( this ).slider( "value" );$("#vZ").text(cam.z+"px");} );
+$( "#z" ).on( "slidechange", function( event, ui ) {cam.z = $( this ).slider( "value" );$("#vZ").text(cam.z+"px");} );
+
+ $( "#rx" ).slider({
+      value: -0.225,
+      orientation: "horizontal",
+     max:3.14/4,
+	 min:-3.14/4,
+	 step:0.01,
+      animate: false
+    });
+	$( "#rx" ).on( "slide", function( event, ui ) {cam.rx = $( this ).slider( "value" );$("#vRX").text((cam.rx*180/3.14).toFixed(2)+"deg");} );
+$( "#rx" ).on( "slidechange", function( event, ui ) {cam.rx = $( this ).slider( "value" );$("#vRX").text((cam.rx*180/3.14).toFixed(2)+"deg");} );
+
+ $( "#ry" ).slider({
+      value: 0.785,
+      orientation: "horizontal",
+     max:3.14/4,
+	 min:-3.14/4,
+	 step:0.01,
+      animate: false
+    });
+	$( "#ry" ).on( "slide", function( event, ui ) {cam.ry = $( this ).slider( "value" );$("#vRY").text((cam.ry*180/3.14).toFixed(2)+"deg");} );
+$( "#ry" ).on( "slidechange", function( event, ui ) {cam.ry = $( this ).slider( "value" );$("#vRY").text((cam.ry*180/3.14).toFixed(2)+"deg");} );
+
+ $( "#rz" ).slider({
+      value: -0.125,
+      orientation: "horizontal",
+     max:3.14/4,
+	 min:-3.14/4,
+	 step:0.01,
+      animate: false
+    });
+	$( "#rz" ).on( "slide", function( event, ui ) {cam.rz = $( this ).slider( "value" );$("#vRZ").text((cam.rz*180/3.14).toFixed(2)+"deg");} );
+$( "#rz" ).on( "slidechange", function( event, ui ) {cam.rz = $( this ).slider( "value" );$("#vRZ").text((cam.rz*180/3.14).toFixed(2)+"deg");} );
+
+  });
+  
+</script>
+
+<div style="position:absolute;width:300px;height:160px;background-color:none;top:45px;opacity:1">
+	<span style="position:absolute;top:0px;left:25px;font-size:13px">Free camera</span>
+	<span style="position:absolute;top:25px;left:25px;font-size:13px">X: <span id="vX">-3000px</span></span><div id="x" style="position:absolute;top:40px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+	<span style="position:absolute;top:65px;left:25px;font-size:13px">Y: <span id="vY">-479px</span></span><div id="y" style="position:absolute;top:80px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+	<span style="position:absolute;top:105px;left:25px;font-size:13px">Z: <span id="vZ">1737px</span></span><div id="z" style="position:absolute;top:120px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+	<span style="position:absolute;top:145px;left:25px;font-size:13px">RX: <span id="vRX">-12.90deg</span></span><div id="rx" style="position:absolute;top:160px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+	<span style="position:absolute;top:185px;left:25px;font-size:13px">RY: <span id="vRY">45deg</span></span><div id="ry" style="position:absolute;top:200px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+	<span style="position:absolute;top:225px;left:25px;font-size:13px">RZ: <span id="vRZ">-7.17deg</span></span><div id="rz" style="position:absolute;top:240px;left:20px;width: 200px; height:3px;margin: 5px;"></div>
+</div>
+</body>
+
+</html>

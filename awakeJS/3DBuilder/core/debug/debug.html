@@ -1,0 +1,33 @@
+<html>
+<script src="../Draggable.js" ></script>
+<script src="../Triangle.js" ></script>
+<script src="../Circle.js" ></script>
+<script src="../Line.js" ></script>
+<script src="../EventUtil.js" ></script>
+<script src="../SvgCanvas.js" ></script>
+<script src="../SvgCanvasContext.js" ></script>
+	<script>
+	
+	window.onload  = function () {
+	
+			
+		var svgDom = document.getElementById("mySvg");
+		
+		var svgCanvas = new SvgCanvas( svgDom , 1000 , 300 );
+		var sctx = svgCanvas.getContext();
+			
+		sctx.drawTriangle( 0,100 , 300,210 , 170,250 );
+		sctx.drawTriangle( 0,100 , 300,210 , 170,250 );
+		sctx.drawCircle( 100,300,10 );
+		sctx.drawLine( 10 , 10 , 50 , 50 );
+		
+		
+	}
+	</script>
+	<body>
+		<svg xmlns="http://www.w3.org/2000/svg" id="mySvg"  style=";border:1px solid black">
+			
+		
+		</svg>
+	</body>
+</html>
